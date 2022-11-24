@@ -1,8 +1,8 @@
-LSH
+CyberpunkShell
 ===
 
-LSH is a simple implementation of a shell in C, and it is the subject of a
-tutorial on [my website][1].  It demonstrates the basics of how a shell works.
+CyberpunkShell is a simple implementation of a shell in C, and it is the subject of a
+tutorial on [Stephen Brennan's website][1].  It demonstrates the basics of how a shell works.
 That is: read, parse, fork, exec, and wait.  Since its purpose is demonstration
 (not feature completeness or even fitness for casual use), it has many
 limitations, including:
@@ -16,9 +16,7 @@ limitations, including:
 Running
 -------
 
-Use `gcc -o lsh src/main.c` to compile, and then `./lsh` to run. If you would
-like to use the standard-library based implementation of `lsh_read_line()`, then
-you can do: `gcc -DLSH_USE_STD_GETLINE -o lsh src/main.c`.
+Use `gcc -o lsh src/punksh.c` to compile, and then `./punksh` to run.
 
 Contributing
 ------------
