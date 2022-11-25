@@ -113,7 +113,8 @@ char *punkShReadLine(void) {
         if (c == EOF || c == '\n') {
             buffer[position] = '\0';
             return buffer;
-        } else {
+        } 
+        else {
             buffer[position] = c;
         }
         position++;
