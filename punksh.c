@@ -14,13 +14,26 @@ int command_pipe[2];
  
 #define READ  0
 #define WRITE 1
+#define MAX_PATH 0
 
+int errno;
+
+char lastdir[MAX_PATH];
+
+/**
+ * @brief 
+ * 
+ * @param input 
+ * @param first 
+ * @param last 
+ * @return int 
+ */
 static int command(int input, int first, int last)
 {
 	int pipettes[2];
  
 	/* Invoke pipe */
-	pipe( pipettes );	
+	pipe(pipettes);	
 	pid = fork();
  
 	/*
@@ -58,8 +71,8 @@ static int command(int input, int first, int last)
 	return pipettes[READ];
 }
  
-/* Final cleanup, 'wait' for processes to terminate.
- *  n : Number of times 'command' was invoked.
+/** @brief Final cleanup, 'wait' for processes to terminate.
+ *  @param n Number of times 'command' was invoked.
  */
 static void cleanup(int n)
 {
@@ -74,10 +87,11 @@ static int n = 0; /* number of calls to 'command' */
  
 int main()
 {
-	printf("punkShell: Type 'flatline' or send EOF to exit.\n");
+	printf("\n\t\t\tpunkShell: High time you chromed up.\n");
+	printf("\t\t\tpunkShell: Type 'flatline' or 'exit' to exit.\n");
 	while (1) {
 		/* Print the command prompt */
-		printf("€$> ");
+		printf("€$ ");
 		fflush(NULL);
  
 		/* Read a command line */
@@ -107,13 +121,56 @@ int main()
 }
  
 static void split(char* cmd);
- 
+
+int exec_cd(char *arg) {
+    char curdir[MAX_PATH];
+    char path[MAX_PATH];
+
+    if (getcwd(curdir, sizeof curdir)) {
+        /* current directory might be unreachable: not an error */
+        *curdir = '\0';
+    }
+    if (arg == NULL) {
+        arg = getenv("HOME");
+    }
+    if (!strcmp(arg, "-")) {
+        if (*lastdir == '\0') {
+            fprintf(stderr, "no previous directory\n");
+            return 1;
+        }
+        arg = lastdir;
+    } else {
+        /* this should be done on all words during the parse phase */
+        if (*arg == '~') {
+            if (arg[1] == '/' || arg[1] == '\0') {
+                snprintf(path, sizeof path, "%s%s", getenv("HOME"), arg + 1);
+                arg = path;
+            } else {
+                /* ~name should expand to the home directory of user with login `name` 
+                   this can be implemented with getpwent() */
+                fprintf(stderr, "syntax not supported: %s\n", arg);
+                return 1;
+            }
+        }
+    }
+    if (chdir(arg)) {
+        fprintf(stderr, "punksh: %s: %s\n", strerror(errno), path);
+        return 1;
+    }
+    strcpy(lastdir, curdir);
+    return 0;
+}
+
 static int run(char* cmd, int input, int first, int last)
 {
 	split(cmd);
 	if (args[0] != NULL) {
-		if (strcmp(args[0], "flatline") == 0)
+		if ((strcmp(args[0], "flatline") == 0) || (strcmp(args[0], "exit") == 0))
 			exit(0);
+		if (strcmp(args[0], "cd") == 0) {
+			exec_cd(args[1]);
+			return 0;
+		}
 		n += 1;
 		return command(input, first, last);
 	}
